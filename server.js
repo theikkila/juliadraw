@@ -4,7 +4,11 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const redis = require("redis");
 // TODO: correct REDIS url from ENV
-const client = redis.createClient();
+const REDIS_HOST = process.env.REDIS_HOST || "redis-server"
+const client = redis.createClient({
+    host: REDIS_HOST.toString(),
+    port: 6379
+});
 
 client.on("error", function(error) {
   console.error(error);
