@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  name: julia-ingress
+  namespace: birthdays
+spec:
+  rules:
+  - host: julia.apps.emblica.com
+    http:
+      paths:
+      - backend:
+          serviceName: node-app-service
+          servicePort: 3000
+  tls:
+  - hosts:
+    - julia.apps.emblica.com
+    secretName: julia-tls

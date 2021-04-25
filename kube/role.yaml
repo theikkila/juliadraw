@@ -1,0 +1,24 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: birthdays 
+  name: birthday-roles
+rules:
+- apiGroups: ["extensions"]
+  resources: ["podsecuritypolicies"]
+  resourceNames: ["permissive"]
+  verbs: ["use"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: birthday-roles
+  namespace: birthdays 
+roleRef:
+  kind: Role
+  name: birthday-roles 
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount 
+  name: default 
+  namespace: birthdays 
