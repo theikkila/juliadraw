@@ -21,7 +21,11 @@ app.use(express.static(__dirname + '/public'));
 
 function onConnection(socket){
   socket.on('load', (data) => {
-      client.smembers('drawings', (err, ok) => {
+      let v = 'drawings'
+      if ('version' in data) {
+        v = data['version']
+      }
+      client.smembers(v, (err, ok) => {
           if (err) return;
           ok.forEach(client_id => {
               client.lrange(client_id, 0, -1, (err, commands) => {
@@ -32,6 +36,19 @@ function onConnection(socket){
               })
           })
       })
+  })
+  socket.on('save', (data) => {
+    client.incr('version', (err, new_version) => {
+        client.rename('drawings', `v${new_version}`, (err, ok) => {
+            console.log("Saving v", new_version)
+            socket.emit('notify', {message: `Saved snapshot v${new_version}. Redirect to snapshot`})
+            socket.broadcast.emit('notify', {message: `Cleaning workspace in 10 seconds...`})
+            setTimeout(() => {
+                socket.emit('goto', {"url": `?v=v${new_version}`})
+                socket.broadcast.emit('reload', {})
+            }, 5000)
+        })
+    })
   })
   socket.on('drawing_start', (data) => {
       // Add drawer to drawset

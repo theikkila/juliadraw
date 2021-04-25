@@ -216,7 +216,15 @@ function init()
 	
 	socket = io();
 	setTimeout(function(){
-		socket.emit('load', {})
+		var l = {}
+		const params = new URLSearchParams(window.location.search)
+		if(params.has('v')) {
+			l = {"version": params.get('v')}
+			// hash found
+		}
+
+		socket.emit('load', l)
+		
 	}, 1000)
 
 	socket.on('drawing_start', function(event) {
@@ -245,13 +253,22 @@ function init()
 
 		// brush.stroke( event.x0*SCREEN_WIDTH, event.y0*SCREEN_HEIGHT );
 	});
+	socket.on('notify', function(event) {
+		alert(event.message)
+	})
+	socket.on('reload', function(event) {
+		window.location.reload();
+	})
+	socket.on('goto', function(event) {
+		window.location.search = event.url
+	})
 
 	// about = new About();
 	// container.appendChild(about.container);
 	
 	window.addEventListener('mousemove', onWindowMouseMove, false);
 	window.addEventListener('resize', onWindowResize, false);
-	// window.addEventListener('keydown', onWindowKeyDown, false);
+	window.addEventListener('keydown', onWindowKeyDown, false);
 	// window.addEventListener('keyup', onWindowKeyUp, false);
 	window.addEventListener('blur', onWindowBlur, false);
 	
@@ -290,20 +307,12 @@ function onWindowResize()
 
 function onWindowKeyDown( event )
 {
-	if (shiftKeyIsDown)
-		return;
 		
 	switch(event.keyCode)
 	{
-		case 16: // Shift
-			shiftKeyIsDown = true;
-			foregroundColorSelector.container.style.left = mouseX - 125 + 'px';
-			foregroundColorSelector.container.style.top = mouseY - 125 + 'px';
-			foregroundColorSelector.container.style.visibility = 'visible';
-			break;
-			
-		case 18: // Alt
-			altKeyIsDown = true;
+
+		case 83: // s
+			socket.emit('save', {})
 			break;
 			
 		case 68: // d
