@@ -29,6 +29,7 @@ function onConnection(socket){
           if (err) return;
           ok.forEach(client_id => {
               client.lrange(client_id, 0, -1, (err, commands) => {
+                  commands.reverse();
                  commands.forEach(raw_command => {
                      const command = JSON.parse(raw_command)
                      socket.emit(command.type, command.data);

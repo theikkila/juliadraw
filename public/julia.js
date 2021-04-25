@@ -10,6 +10,7 @@ shaded.prototype =
 	prevMouseX: null, prevMouseY: null,
 
 	points: null, count: null,
+	color: null,
 
 	init: function( context )
 	{
@@ -18,6 +19,7 @@ shaded.prototype =
 
 		this.points = new Array();
 		this.count = 0;
+		this.color = COLOR;
 	},
 
 	destroy: function()
@@ -28,6 +30,9 @@ shaded.prototype =
 	{
 		this.prevMouseX = mouseX;
 		this.prevMouseY = mouseY;
+	},
+	setColor: function(color) {
+		this.color = color;
 	},
 
 	stroke: function( mouseX, mouseY )
@@ -46,7 +51,7 @@ shaded.prototype =
 
 			if (d < 1000)
 			{
-				this.context.strokeStyle = "rgba(" + COLOR[0] + ", " + COLOR[1] + ", " + COLOR[2] + ", " + ((1 - (d / 1000)) * 0.1 * BRUSH_PRESSURE) + " )";
+				this.context.strokeStyle = "rgba(" + this.color[0] + ", " + this.color[1] + ", " + this.color[2] + ", " + ((1 - (d / 1000)) * 0.1 * BRUSH_PRESSURE) + " )";
 
 				this.context.beginPath();
 				this.context.moveTo( this.points[this.count][0], this.points[this.count][1]);
@@ -89,7 +94,8 @@ var SCREEN_WIDTH = window.innerWidth,
     SCREEN_HEIGHT = window.innerHeight,
     BRUSH_SIZE = 1,
     BRUSH_PRESSURE = 1,
-    COLOR = [0, 0, 0],
+	DEFAULT_COLOR = [Math.round(Math.random()*255), Math.round(Math.random()*255), Math.round(Math.random()*255)],
+    COLOR = DEFAULT_COLOR,
     BLACK = [0, 0, 0],
     BACKGROUND_COLOR = [250, 250, 250],
     STORAGE = null,
@@ -232,7 +238,9 @@ function init()
 		if (!(event.c in drawer_brushes)) {
 			drawer_brushes[event.c] = new shaded(context);
 		};
-
+		if ('color' in event) {
+			drawer_brushes[event.c].setColor(event.color);
+		}
 		drawer_brushes[event.c].strokeStart( event.x0*SCREEN_WIDTH, event.y0*SCREEN_HEIGHT );
 	});
 	socket.on('drawing_stroke', function(event) {
@@ -240,6 +248,9 @@ function init()
 		if (!(event.c in drawer_brushes)) {
 			drawer_brushes[event.c] = new shaded(context);
 		};
+		if ('color' in event) {
+			drawer_brushes[event.c].setColor(event.color);
+		}
 
 		drawer_brushes[event.c].stroke( event.x0*SCREEN_WIDTH, event.y0*SCREEN_HEIGHT );
 	});
@@ -248,6 +259,9 @@ function init()
 		if (!(event.c in drawer_brushes)) {
 			drawer_brushes[event.c] = new shaded(context);
 		};
+		if ('color' in event) {
+			drawer_brushes[event.c].setColor(event.color);
+		}
 
 		drawer_brushes[event.c].strokeEnd();
 
@@ -424,6 +438,7 @@ function onCanvasMouseDown( event )
 	brush.strokeStart( event.clientX, event.clientY );
 	socket.emit('drawing_start', {
 	  c: CLIENT_ID,
+	  color: COLOR,
       x0: event.clientX / SCREEN_WIDTH,
       y0: event.clientY / SCREEN_HEIGHT
     });
